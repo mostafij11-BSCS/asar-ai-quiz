@@ -6,45 +6,252 @@
 <title>ASAR — Login</title>
 <link rel="stylesheet" href="css/global.css">
 <style>
-  .auth-wrap {
-    min-height: 100vh; display: flex;
-    align-items: center; justify-content: center; padding: 20px;
-  }
-  .auth-box {
-    width: 100%; max-width: 440px;
-    padding: 44px 40px; border-radius: 24px;
-  }
-  .auth-logo {
-    font-size: 26px; font-weight: 900; text-align: center;
-    background: linear-gradient(135deg,#2563eb,#7c3aed);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    margin-bottom: 8px;
-  }
-  .auth-sub { text-align: center; color: rgba(255,255,255,0.45); font-size: 14px; margin-bottom: 32px; }
-  .tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; margin-bottom: 28px; }
-  .tab {
-    flex: 1; padding: 10px; text-align: center; border-radius: 8px;
-    font-size: 14px; font-weight: 600; cursor: pointer; color: rgba(255,255,255,0.4);
-    border: none; background: transparent; transition: all 0.3s;
-  }
-  .tab.active { background: linear-gradient(135deg,#2563eb,#7c3aed); color: #fff; }
-  .form-panel { display: none; }
-  .form-panel.active { display: block; }
-  .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 20px 0; }
-  .step { display: none; }
-  .step.active { display: block; }
-  .step-indicator {
-    display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;
-  }
-  .step-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: rgba(255,255,255,0.15); transition: background 0.3s;
-  }
-  .step-dot.active { background: #2563eb; }
-  .step-dot.done { background: #10b981; }
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-box{width:100%;max-width:440px;padding:44px 40px;border-radius:24px}
+.auth-logo{font-size:28px;font-weight:900;text-align:center;background:linear-gradient(135deg,#2563eb,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.auth-sub{text-align:center;color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:32px}
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:10px;padding:4px;margin-bottom:28px}
+.tab{flex:1;padding:10px;text-align:center;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.4);border:none;background:transparent;transition:all 0.3s}
+.tab.active{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+.form-panel{display:none}
+.form-panel.active{display:block}
+.step{display:none}
+.step.active{display:block}
+.step-indicator{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:background 0.3s}
+.step-dot.active{background:#2563eb}
+.step-dot.done{background:#10b981}
+.back-btn{background:none;border:none;color:rgba(255,255,255,0.45);font-size:13px;cursor:pointer;margin-bottom:16px;padding:0;display:flex;align-items:center;gap:6px}
+.back-btn:hover{color:#fff}
+.info-row{display:flex;gap:12px}
+.info-row .form-group{flex:1}
+.or-divider{text-align:center;color:rgba(255,255,255,0.25);font-size:13px;margin:16px 0;position:relative}
+.or-divider::before,.or-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:rgba(255,255,255,0.08)}
+.or-divider::before{left:0}
+.or-divider::after{right:0}
+.guest-btn{width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.6);font-size:14px;cursor:pointer;transition:all 0.3s}
+.guest-btn:hover{background:rgba(255,255,255,0.08);color:#fff}
 </style>
 </head>
 <body>
-<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
 <div class="grid-overlay"></div>
 <div id="toast"></div>
+
+<div class="auth-wrap">
+  <div class="auth-box glass">
+
+    <div class="auth-logo">⚡ ASAR</div>
+    <div class="auth-sub">AI-Powered School Quiz Platform</div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Login</button>
+      <button class="tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- ── LOGIN PANEL ── -->
+    <div id="loginPanel" class="form-panel active">
+      <div id="loginAlert" class="alert"></div>
+      <div class="form-group">
+        <label>Username</label>
+        <input id="loginUsername" type="text" class="form-control" placeholder="Enter your username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input id="loginPassword" type="password" class="form-control" placeholder="Enter your password">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="handleLogin()">
+        🔐 Login
+      </button>
+      <div class="or-divider">or</div>
+      <button class="guest-btn" onclick="guestLogin()">
+        👤 Continue as Guest
+      </button>
+    </div>
+
+    <!-- ── REGISTER PANEL ── -->
+    <div id="registerPanel" class="form-panel">
+      <div id="registerAlert" class="alert"></div>
+
+      <!-- Step Dots -->
+      <div class="step-indicator">
+        <div class="step-dot active" id="dot1"></div>
+        <div class="step-dot" id="dot2"></div>
+        <div class="step-dot" id="dot3"></div>
+      </div>
+
+      <!-- Step 1: Verify Student ID -->
+      <div class="step active" id="step1">
+        <div class="form-group">
+          <label>Student ID</label>
+          <input id="regStudentId" type="text" class="form-control" placeholder="Enter your student ID">
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input id="regPhone" type="tel" class="form-control" placeholder="Enter registered phone number">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="verifyStep1()">
+          Verify Student ID →
+        </button>
+      </div>
+
+      <!-- Step 2: Personal Info -->
+      <div class="step" id="step2">
+        <button class="back-btn" onclick="goStep(1)">← Back</button>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input id="regName" type="text" class="form-control" placeholder="Your full name">
+        </div>
+        <div class="info-row">
+          <div class="form-group">
+            <label>Grade / Class</label>
+            <input id="regGrade" type="text" class="form-control" placeholder="e.g. 10A">
+          </div>
+          <div class="form-group">
+            <label>Roll Number</label>
+            <input id="regRoll" type="text" class="form-control" placeholder="e.g. 15">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="verifyStep2()">
+          Continue →
+        </button>
+      </div>
+
+      <!-- Step 3: Create Account -->
+      <div class="step" id="step3">
+        <button class="back-btn" onclick="goStep(2)">← Back</button>
+        <div class="form-group">
+          <label>Username</label>
+          <input id="regUsername" type="text" class="form-control" placeholder="Choose a username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input id="regPassword" type="password" class="form-control" placeholder="Create a password (min 6 chars)">
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input id="regConfirm" type="password" class="form-control" placeholder="Repeat your password">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="handleRegister()">
+          🎓 Create Account
+        </button>
+      </div>
+    </div>
+    <!-- end register panel -->
+
+  </div>
+</div>
+
+<script type="module">
+import { loginStudent, registerStudent, verifyAdminStudent, saveSession, getSession } from './js/auth.js';
+
+// Redirect if already logged in
+if (getSession()) window.location.href = 'quiz.html';
+
+let regData = {};
+
+// ── Tab Switch ──
+window.switchTab = (tab) => {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1));
+  });
+  document.getElementById('loginPanel').classList.toggle('active', tab==='login');
+  document.getElementById('registerPanel').classList.toggle('active', tab==='register');
+};
+
+// ── Show Alert ──
+function showAlert(id, msg, type='error') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert alert-${type} show`;
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ── Show Toast ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Go to Step ──
+window.goStep = (n) => {
+  document.querySelectorAll('.step').forEach((s,i) => {
+    s.classList.toggle('active', i+1===n);
+  });
+  document.querySelectorAll('.step-dot').forEach((d,i) => {
+    d.classList.remove('active','done');
+    if (i+1 < n) d.classList.add('done');
+    if (i+1 === n) d.classList.add('active');
+  });
+};
+
+// ── Step 1: Verify Student ID ──
+window.verifyStep1 = async () => {
+  const studentId = document.getElementById('regStudentId').value.trim();
+  const phone     = document.getElementById('regPhone').value.trim();
+  if (!studentId || !phone) return showAlert('registerAlert','Please fill all fields.');
+  try {
+    const result = await verifyAdminStudent(studentId, phone);
+    if (!result.valid) return showAlert('registerAlert', result.msg);
+    regData.studentId = studentId;
+    regData.phone     = phone;
+    goStep(2);
+  } catch(e) { showAlert('registerAlert', 'Error: ' + e.message); }
+};
+
+// ── Step 2: Personal Info ──
+window.verifyStep2 = () => {
+  const name  = document.getElementById('regName').value.trim();
+  const grade = document.getElementById('regGrade').value.trim();
+  const roll  = document.getElementById('regRoll').value.trim();
+  if (!name) return showAlert('registerAlert','Please enter your name.');
+  regData.name  = name;
+  regData.grade = grade;
+  regData.roll  = roll;
+  goStep(3);
+};
+
+// ── Step 3: Create Account ──
+window.handleRegister = async () => {
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const confirm  = document.getElementById('regConfirm').value;
+  if (!username || !password) return showAlert('registerAlert','Please fill all fields.');
+  if (password.length < 6) return showAlert('registerAlert','Password must be at least 6 characters.');
+  if (password !== confirm) return showAlert('registerAlert','Passwords do not match.');
+  try {
+    const result = await registerStudent({ ...regData, username, password });
+    if (!result.success) return showAlert('registerAlert', result.msg);
+    saveSession(result.user);
+    toast('🎉 Account created! Redirecting...');
+    setTimeout(() => window.location.href = 'quiz.html', 1500);
+  } catch(e) { showAlert('registerAlert', 'Error: ' + e.message); }
+};
+
+// ── Login ──
+window.handleLogin = async () => {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!username || !password) return showAlert('loginAlert','Please fill all fields.');
+  try {
+    const result = await loginStudent(username, password);
+    if (!result.success) return showAlert('loginAlert', result.msg);
+    saveSession(result.user);
+    toast('✅ Welcome back, ' + result.user.name + '!');
+    setTimeout(() => window.location.href = 'quiz.html', 1200);
+  } catch(e) { showAlert('loginAlert', 'Error: ' + e.message); }
+};
+
+// ── Guest Login ──
+window.guestLogin = () => {
+  saveSession({ uid:'guest', name:'Guest', username:'guest', role:'guest', xp:0 });
+  window.location.href = 'quiz.html';
+};
+</script>
+</body>
+</html>
