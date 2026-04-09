@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASAR — Login</title>
+<link rel="stylesheet" href="css/global.css">
+<style>
+  .auth-wrap {
+    min-height: 100vh; display: flex;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .auth-box {
+    width: 100%; max-width: 440px;
+    padding: 44px 40px; border-radius: 24px;
+  }
+  .auth-logo {
+    font-size: 26px; font-weight: 900; text-align: center;
+    background: linear-gradient(135deg,#2563eb,#7c3aed);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .auth-sub { text-align: center; color: rgba(255,255,255,0.45); font-size: 14px; margin-bottom: 32px; }
+  .tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; margin-bottom: 28px; }
+  .tab {
+    flex: 1; padding: 10px; text-align: center; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer; color: rgba(255,255,255,0.4);
+    border: none; background: transparent; transition: all 0.3s;
+  }
+  .tab.active { background: linear-gradient(135deg,#2563eb,#7c3aed); color: #fff; }
+  .form-panel { display: none; }
+  .form-panel.active { display: block; }
+  .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 20px 0; }
+  .step { display: none; }
+  .step.active { display: block; }
+  .step-indicator {
+    display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;
+  }
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); transition: background 0.3s;
+  }
+  .step-dot.active { background: #2563eb; }
+  .step-dot.done { background: #10b981; }
+</style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grid-overlay"></div>
+<div id="toast"></div>
