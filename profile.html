@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASAR — Profile</title>
+<link rel="stylesheet" href="css/global.css">
+<style>
+.page-wrap{max-width:860px;margin:0 auto;padding:40px 20px;position:relative;z-index:1}
+
+/* ── Profile Hero ── */
+.profile-hero{display:flex;align-items:center;gap:28px;padding:36px;border-radius:24px;margin-bottom:28px;flex-wrap:wrap}
+.hero-avatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#fff;flex-shrink:0;border:3px solid rgba(99,102,241,0.4);box-shadow:0 0 30px rgba(99,102,241,0.3)}
+.hero-info{flex:1;min-width:0}
+.hero-name{font-size:26px;font-weight:900;margin-bottom:4px}
+.hero-username{color:rgba(255,255,255,0.4);font-size:14px;margin-bottom:10px}
+.hero-badges{display:flex;gap:8px;flex-wrap:wrap}
+.hero-actions{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.level-bar-wrap{margin-top:12px}
+.level-bar-label{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:6px}
+.level-bar{height:6px;background:rgba(255,255,255,0.07);border-radius:6px;overflow:hidden}
+.level-bar-fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:6px;transition:width 1.2s ease}
+
+/* ── Stats Grid ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat-card{padding:22px 16px;border-radius:18px;text-align:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);transition:transform 0.3s}
+.stat-card:hover{transform:translateY(-3px)}
+.stat-icon{font-size:26px;margin-bottom:8px}
+.stat-val{font-size:26px;font-weight:900;margin-bottom:4px}
+.stat-key{font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.6px}
+
+/* ── Section Title ── */
+.section-title{font-size:18px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* ── Achievements ── */
+.achievements-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:32px}
+.achievement-card{padding:20px 14px;border-radius:16px;text-align:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);transition:all 0.3s;position:relative;overflow:hidden}
+.achievement-card.unlocked{background:rgba(99,102,241,0.08);border-color:rgba(99,102,241,0.3)}
+.achievement-card.locked{opacity:0.4;filter:grayscale(1)}
+.achievement-card:hover{transform:translateY(-2px)}
+.ach-icon{font-size:32px;margin-bottom:10px}
+.ach-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.ach-desc{font-size:11px;color:rgba(255,255,255,0.35)}
+.ach-unlocked-tag{position:absolute;top:8px;right:8px;font-size:10px;background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid rgba(16,185,129,0.3);padding:2px 7px;border-radius:50px;font-weight:600}
+
+/* ── History Table ── */
+.history-wrap{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,0.07)}
+.history-table{width:100%;border-collapse:collapse}
+.history-table thead th{padding:14px 18px;text-align:left;font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:0.8px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06)}
+.history-table tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.2s}
+.history-table tbody tr:hover{background:rgba(255,255,255,0.03)}
+.history-table tbody tr:last-child{border-bottom:none}
+.history-table td{padding:14px 18px;font-size:14px;vertical-align:middle}
+.score-pill{display:inline-block;padding:4px 12px;border-radius:50px;font-size:13px;font-weight:700}
+.score-high{background:rgba(16,185,129,0.15);color:#6ee7b7}
+.score-mid{background:rgba(245,158,11,0.15);color:#fcd34d}
+.score-low{background:rgba(239,68,68,0.12);color:#fca5a5}
+.history-empty{padding:40px;text-align:center;color:rgba(255,255,255,0.3)}
+
+/* ── Logout ── */
+.danger-zone{margin-top:32px;padding:24px;border-radius:18px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15)}
+.danger-title{font-size:15px;font-weight:700;color:#f87171;margin-bottom:12px}
+.btn-danger{padding:10px 24px;border-radius:10px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#f87171;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s}
+.btn-danger:hover{background:rgba(239,68,68,0.25);border-color:#ef4444;color:#fff}
+
+@media(max-width:700px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .profile-hero{flex-direction:column;text-align:center}
+  .hero-actions{flex-direction:row;justify-content:center}
+  .hero-badges{justify-content:center}
+}
+@media(max-width:450px){
+  .achievements-grid{grid-template-columns:repeat(2,1fr)}
+  .history-table thead{display:none}
+  .history-table td{display:block;padding:8px 14px}
+  .history-table td:first-child{padding-top:14px;font-weight:700}
+  .history-table td:last-child{padding-bottom:14px}
+}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+<div class="grid-overlay"></div>
+<div id="toast"></div>
+
+<!-- ── Navbar ── -->
+<nav>
+  <a class="nav-logo" href="index.html">⚡ ASAR</a>
+  <div class="nav-links">
+    <a href="quiz.html">🎯 <span>Quiz</span></a>
+    <a href="leaderboard.html">🏆 <span>Leaderboard</span></a>
+    <a href="profile.html" class="active">👤 <span>Profile</span></a>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="font-size:13px;color:rgba(255,255,255,0.5)">XP: <span id="navXP" style="color:#fbbf24;font-weight:700">0</span></div>
+    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700" id="navAvatar">?</div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- ── Profile Hero ── -->
+  <div class="profile-hero glass" id="profileHero">
+    <div class="hero-avatar" id="heroAvatar">?</div>
+    <div class="hero-info">
+      <div class="hero-name" id="heroName">Loading...</div>
+      <div class="hero-username" id="heroUsername">@—</div>
+      <div class="hero-badges" id="heroBadges"></div>
+      <div class="level-bar-wrap">
+        <div class="level-bar-label">
+          <span id="levelLabel">Level —</span>
+          <span id="levelXP">0 XP</span>
+        </div>
+        <div class="level-bar">
+          <div class="level-bar-fill" id="levelBarFill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <a href="quiz.html" class="btn btn-primary">🎯 Take Quiz</a>
+      <a href="leaderboard.html" class="btn btn-outline">🏆 Leaderboard</a>
+    </div>
+  </div>
+
+  <!-- ── Stats ── -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-val grad-text" id="statXP">0</div>
+      <div class="stat-key">Total XP</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div class="stat-val" id="statQuizzes" style="color:#60a5fa">0</div>
+      <div class="stat-key">Quizzes Taken</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-val" id="statAvg" style="color:#34d399">0%</div>
+      <div class="stat-key">Avg Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-val" id="statBest" style="color:#f97316">0%</div>
+      <div class="stat-key">Best Score</div>
+    </div>
+  </div>
+
+  <!-- ── Achievements ── -->
+  <div class="section-title">🏅 Achievements</div>
+  <div class="achievements-grid" id="achievementsGrid">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- ── Quiz History ── -->
+  <div class="section-title">📜 Quiz History</div>
+  <div class="history-wrap">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Chapter</th>
+          <th>Score</th>
+          <th>XP</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody">
+        <tr><td colspan="5" class="history-empty">Loading history...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Danger Zone ── -->
+  <div class="danger-zone">
+    <div class="danger-title">⚠️ Account</div>
+    <button class="btn-danger" onclick="handleLogout()">🚪 Logout</button>
+  </div>
+
+</div>
+
+<script type="module">
+import { requireLogin, getSession, logout } from './js/auth.js';
+import { getUserProfile, getQuizHistory } from './js/profile.js';
+import { getXPLevel } from './js/leaderboard.js';
+
+const user = requireLogin();
+if (!user) throw new Error('Not logged in');
+
+// Navbar
+document.getElementById('navXP').textContent     = user.xp || 0;
+document.getElementById('navAvatar').textContent = (user.name||'G')[0].toUpperCase();
+
+// ── Toast ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── XP Levels ──
+const LEVELS = [
+  { min:0,    max:199,  label:'🌱 Beginner',  color:'#6b7280' },
+  { min:200,  max:499,  label:'⚡ Explorer',  color:'#3b82f6' },
+  { min:500,  max:999,  label:'🔥 Achiever',  color:'#f59e0b' },
+  { min:1000, max:1999, label:'🏆 Champion',  color:'#8b5cf6' },
+  { min:2000, max:4999, label:'💎 Elite',     color:'#06b6d4' },
+  { min:5000, max:Infinity, label:'👑 Master',color:'#f43f5e' },
+];
+
+function getLevel(xp) {
+  return LEVELS.find(l => xp >= l.min && xp <= l.max) || LEVELS[0];
+}
+
+// ── Achievements Config ──
+const ACHIEVEMENTS = [
+  { id:'first_quiz',  icon:'🎯', name:'First Step',    desc:'Complete your first quiz',           check: (s) => s.totalQuizzes >= 1 },
+  { id:'perfect',     icon:'💯', name:'Perfect Score',  desc:'Get 100% on any quiz',               check: (s) => s.bestScore >= 100 },
+  { id:'quiz5',       icon:'📚', name:'Quiz Fan',       desc:'Complete 5 quizzes',                 check: (s) => s.totalQuizzes >= 5 },
+  { id:'quiz20',      icon:'🏅', name:'Quiz Master',    desc:'Complete 20 quizzes',                check: (s) => s.totalQuizzes >= 20 },
+  { id:'xp500',       icon:'⚡', name:'XP Grinder',    desc:'Earn 500 XP total',                  check: (s) => s.totalXP >= 500 },
+  { id:'xp1000',      icon:'🔥', name:'XP Champion',   desc:'Earn 1000 XP total',                 check: (s) => s.totalXP >= 1000 },
+  { id:'avg80',       icon:'🌟', name:'Consistent',     desc:'Maintain 80%+ average score',        check: (s) => s.avgScore >= 80 },
+  { id:'speedster',   icon:'⏱️', name:'Speedster',     desc:'Finish a quiz under 60 seconds',     check: (s) => s.hasFastQuiz },
+  { id:'allsubjects', icon:'🎓', name:'All-Rounder',   desc:'Quiz in 3+ different subjects',      check: (s) => s.uniqueSubjects >= 3 },
+  { id:'streak3',     icon:'🔥', name:'On Fire',        desc:'Score 80%+ in 3 quizzes in a row',  check: (s) => s.bestStreak >= 3 },
+];
+
+// ── Load Profile ──
+async function loadProfile() {
+  try {
+    const profile = await getUserProfile(user.uid);
+    const xp      = profile.xp || user.xp || 0;
+    const lvl     = getLevel(xp);
+
+    // Hero
+    document.getElementById('heroAvatar').textContent  = (profile.name||'?')[0].toUpperCase();
+    document.getElementById('heroName').textContent    = profile.name || 'Student';
+    document.getElementById('heroUsername').textContent= '@' + (profile.username||'unknown');
+
+    // Badges
+    const badges = [];
+    if (profile.grade) badges.push(`<span class="badge" style="background:rgba(99,102,241,0.2);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3)">$${profile.grade}</span>`);
+    if (profile.roll)  badges.push(`<span class="badge" style="background:rgba(16,185,129,0.15);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25)">Roll #$${profile.roll}</span>`);
+    badges.push(`<span class="badge" style="background:$${lvl.color}22;color:$${lvl.color};border:1px solid $${lvl.color}44">$${lvl.label}</span>`);
+    document.getElementById('heroBadges').innerHTML = badges.join('');
+
+    // Level bar
+    const nextLvl  = LEVELS[LEVELS.findIndex(l=>l.label===lvl.label)+1];
+    const barPct   = nextLvl ? Math.min(100, Math.round(((xp-lvl.min)/(nextLvl.min-lvl.min))*100)) : 100;
+    document.getElementById('levelLabel').textContent  = lvl.label;
+    document.getElementById('levelXP').textContent     = xp.toLocaleString() + ' XP';
+    setTimeout(()=>{
+      document.getElementById('levelBarFill').style.width = barPct + '%';
+    }, 400);
+
+    // Stats
+    document.getElementById('statXP').textContent      = xp.toLocaleString();
+    document.getElementById('statQuizzes').textContent = profile.totalQuizzes || 0;
+    document.getElementById('statAvg').textContent     = (profile.avgScore||0) + '%';
+    document.getElementById('statBest').textContent    = (profile.bestScore||0) + '%';
+    document.getElementById('navXP').textContent       = xp;
+
+    // Achievements
+    const stats = {
+      totalXP:       xp,
+      totalQuizzes:  profile.totalQuizzes || 0,
+      avgScore:      profile.avgScore     || 0,
+      bestScore:     profile.bestScore    || 0,
+      hasFastQuiz:   profile.hasFastQuiz  || false,
+      uniqueSubjects:profile.uniqueSubjects|| 0,
+      bestStreak:    profile.bestStreak   || 0,
+    };
+
+    document.getElementById('achievementsGrid').innerHTML = ACHIEVEMENTS.map(a => {
+      const unlocked = a.check(stats);
+      return `
+      <div class="achievement-card $${unlocked?'unlocked':'locked'}">
+        $${unlocked?'<span class="ach-unlocked-tag">✓ Unlocked</span>':''}
+        <div class="ach-icon">$${a.icon}</div>
+        <div class="ach-name">$${a.name}</div>
+        <div class="ach-desc">$${a.desc}</div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.error('Profile error:', e);
+    toast('⚠️ Could not load profile data');
+  }
+}
+
+// ── Load History ──
+async function loadHistory() {
+  try {
+    const history = await getQuizHistory(user.uid, 20);
+    if (!history || history.length === 0) {
+      document.getElementById('historyBody').innerHTML =
+        '<tr><td colspan="5" class="history-empty">📭 No quizzes yet — take your first quiz!</td></tr>';
+      return;
+    }
+
+    document.getElementById('historyBody').innerHTML = history.map(h => {
+      const pct  = Math.round((h.score/h.total)*100);
+      const cls  = pct>=80?'score-high':pct>=50?'score-mid':'score-low';
+      const date = h.createdAt?.toDate ? h.createdAt.toDate().toLocaleDateString() : '—';
+      return `
+      <tr>
+        <td><strong>$${h.subject||'—'}</strong></td>
+        <td style="color:rgba(255,255,255,0.5);font-size:13px">$${h.chapter||'—'}</td>
+        <td><span class="score-pill $${cls}">$${h.score}/$${h.total} ($${pct}%)</span></td>
+        <td style="color:#fbbf24;font-weight:700">+$${h.xpEarned||0}</td>
+        <td style="color:rgba(255,255,255,0.35);font-size:13px">${date}</td>
+      </tr>`;
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('historyBody').innerHTML =
+      '<tr><td colspan="5" class="history-empty">❌ Failed to load history</td></tr>';
+  }
+}
+
+// ── Logout ──
+window.handleLogout = () => {
+  if (confirm('Are you sure you want to logout?')) {
+    logout();
+    window.location.href = 'login.html';
+  }
+};
+
+// ── Init ──
+loadProfile();
+loadHistory();
+</script>
+</body>
+</html>
