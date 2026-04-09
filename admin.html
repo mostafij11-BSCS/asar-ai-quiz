@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASAR — Admin Panel</title>
+<link rel="stylesheet" href="css/global.css">
+<style>
+.page-wrap{max-width:1100px;margin:0 auto;padding:40px 20px;position:relative;z-index:1}
+
+/* ── Admin Header ── */
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:16px}
+.admin-title{font-size:30px;font-weight:900}
+.admin-sub{font-size:14px;color:rgba(255,255,255,0.4);margin-top:4px}
+
+/* ── Stat Cards ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px}
+.stat-card{padding:24px 20px;border-radius:18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);text-align:center;transition:transform 0.3s}
+.stat-card:hover{transform:translateY(-3px)}
+.stat-icon{font-size:28px;margin-bottom:8px}
+.stat-val{font-size:28px;font-weight:900;margin-bottom:4px}
+.stat-key{font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.6px}
+
+/* ── Tabs ── */
+.admin-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:12px;padding:5px;margin-bottom:28px;overflow-x:auto}
+.admin-tab{flex:1;min-width:120px;padding:11px 16px;text-align:center;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;color:rgba(255,255,255,0.4);border:none;background:transparent;transition:all 0.3s;white-space:nowrap}
+.admin-tab.active{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff}
+
+/* ── Tab Panels ── */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.search-box{flex:1;min-width:200px;padding:11px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;font-size:14px;outline:none;transition:border-color 0.3s}
+.search-box:focus{border-color:rgba(99,102,241,0.5)}
+.search-box::placeholder{color:rgba(255,255,255,0.25)}
+
+/* ── Table ── */
+.table-wrap{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.07)}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table thead th{padding:14px 18px;text-align:left;font-size:11px;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06)}
+.admin-table tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.2s}
+.admin-table tbody tr:hover{background:rgba(255,255,255,0.03)}
+.admin-table tbody tr:last-child{border-bottom:none}
+.admin-table td{padding:13px 18px;font-size:14px;vertical-align:middle}
+.table-empty{padding:50px;text-align:center;color:rgba(255,255,255,0.3);font-size:14px}
+.action-btns{display:flex;gap:8px}
+.btn-icon{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.2s}
+.btn-icon-del{background:rgba(239,68,68,0.12);color:#f87171}
+.btn-icon-del:hover{background:rgba(239,68,68,0.25)}
+.btn-icon-edit{background:rgba(99,102,241,0.12);color:#a5b4fc}
+.btn-icon-edit:hover{background:rgba(99,102,241,0.25)}
+.btn-icon-reset{background:rgba(245,158,11,0.12);color:#fcd34d}
+.btn-icon-reset:hover{background:rgba(245,158,11,0.25)}
+
+/* ── Add Student Form ── */
+.add-form{padding:32px;border-radius:20px;margin-bottom:28px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.add-form-title{font-size:17px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-box{width:100%;max-width:440px;padding:36px;border-radius:20px}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:8px}
+.modal-sub{color:rgba(255,255,255,0.4);font-size:14px;margin-bottom:24px}
+.modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
+
+/* ── Role Badge ── */
+.role-admin{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
+.role-student{background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3)}
+.role-guest{background:rgba(107,114,128,0.15);color:#9ca3af;border:1px solid rgba(107,114,128,0.3)}
+
+@media(max-width:768px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .form-row,.form-row-3{grid-template-columns:1fr}
+  .admin-table thead{display:none}
+  .admin-table td{display:block;padding:6px 14px}
+  .admin-table td:first-child{padding-top:14px}
+  .admin-table td:last-child{padding-bottom:14px}
+}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+<div class="grid-overlay"></div>
+<div id="toast"></div>
+
+<!-- ── Navbar ── -->
+<nav>
+  <a class="nav-logo" href="index.html">⚡ ASAR</a>
+  <div class="nav-links">
+    <a href="quiz.html">🎯 <span>Quiz</span></a>
+    <a href="leaderboard.html">🏆 <span>Leaderboard</span></a>
+    <a href="profile.html">👤 <span>Profile</span></a>
+    <a href="admin.html" class="active">🛡️ <span>Admin</span></a>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span class="badge role-admin">Admin</span>
+    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#ef4444,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700" id="navAvatar">A</div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- ── Admin Header ── -->
+  <div class="admin-header">
+    <div>
+      <div class="admin-title grad-text">🛡️ Admin Panel</div>
+      <div class="admin-sub">Manage students, monitor quizzes and platform activity</div>
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()">➕ Add Student ID</button>
+  </div>
+
+  <!-- ── Stats ── -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-val grad-text" id="statUsers">—</div>
+      <div class="stat-key">Total Students</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div class="stat-val" id="statQuizzes" style="color:#60a5fa">—</div>
+      <div class="stat-key">Quizzes Taken</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚡</div>
+      <div class="stat-val" id="statXP" style="color:#fbbf24">—</div>
+      <div class="stat-key">Total XP Given</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-val" id="statAvg" style="color:#34d399">—%</div>
+      <div class="stat-key">Platform Avg Score</div>
+    </div>
+  </div>
+
+  <!-- ── Tabs ── -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchTab('students',this)">👥 Students</button>
+    <button class="admin-tab" onclick="switchTab('attempts',this)">📋 Quiz Attempts</button>
+    <button class="admin-tab" onclick="switchTab('registered',this)">🆔 Student IDs</button>
+  </div>
+
+  <!-- ══ TAB: Students ══ -->
+  <div class="tab-panel active" id="tab-students">
+    <div class="toolbar">
+      <input class="search-box" type="text" placeholder="🔍 Search by name, username, grade..."
+        oninput="filterStudents(this.value)">
+      <button class="btn btn-outline btn-sm" onclick="loadStudents()">🔄 Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Student</th><th>Grade</th>
+            <th>Role</th><th>XP</th><th>Quizzes</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsBody">
+          <tr><td colspan="7" class="table-empty">Loading students...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ TAB: Quiz Attempts ══ -->
+  <div class="tab-panel" id="tab-attempts">
+    <div class="toolbar">
+      <input class="search-box" type="text" placeholder="🔍 Search by student or subject..."
+        oninput="filterAttempts(this.value)">
+      <button class="btn btn-outline btn-sm" onclick="loadAttempts()">🔄 Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Student</th><th>Subject</th><th>Chapter</th>
+            <th>Score</th><th>XP</th><th>Time</th><th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="attemptsBody">
+          <tr><td colspan="7" class="table-empty">Loading attempts...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ TAB: Registered Student IDs ══ -->
+  <div class="tab-panel" id="tab-registered">
+    <div class="toolbar">
+      <input class="search-box" type="text" placeholder="🔍 Search student ID or phone..."
+        oninput="filterIDs(this.value)">
+      <button class="btn btn-outline btn-sm" onclick="loadRegisteredIDs()">🔄 Refresh</button>
+    </div>
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Student ID</th><th>Phone</th><th>Name</th>
+            <th>Class</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="idsBody">
+          <tr><td colspan="6" class="table-empty">Loading IDs...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ Modal: Add Student ID ══ -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal-box glass">
+    <div class="modal-title">➕ Pre-register Student ID</div>
+    <div class="modal-sub">Students can only register if their ID is here</div>
+    <div id="addAlert" class="alert"></div>
+    <div class="form-row" style="margin-bottom:14px">
+      <div class="form-group" style="margin:0">
+        <label>Student ID</label>
+        <input id="addStudentId" type="text" class="form-control" placeholder="e.g. STU-2024-001">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Phone Number</label>
+        <input id="addPhone" type="tel" class="form-control" placeholder="e.g. 03001234567">
+      </div>
+    </div>
+    <div class="form-row" style="margin-bottom:14px">
+      <div class="form-group" style="margin:0">
+        <label>Full Name (optional)</label>
+        <input id="addName" type="text" class="form-control" placeholder="Student's full name">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Class (optional)</label>
+        <input id="addClass" type="text" class="form-control" placeholder="e.g. Class 10">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addStudentID()">➕ Add Student ID</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: Confirm Delete ══ -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box glass">
+    <div class="modal-title">🗑️ Delete Student</div>
+    <div class="modal-sub" id="deleteModalSub">Are you sure? This action cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-primary" style="background:linear-gradient(135deg,#ef4444,#dc2626)" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { requireLogin, getSession } from './js/auth.js';
+import {
+  getAllStudents, getAllAttempts, getAdminStats,
+  addStudentID, getAllStudentIDs, deleteStudent,
+  deleteStudentID, resetStudentXP
+} from './js/admin.js';
+
+// ── Guard: Admin Only ──
+const user = requireLogin();
+if (!user) throw new Error('Not logged in');
+if (user.role !== 'admin') {
+  alert('⛔ Access denied. Admins only.');
+  window.location.href = 'quiz.html';
+  throw new Error('Not admin');
+}
+
+document.getElementById('navAvatar').textContent = (user.name||'A')[0].toUpperCase();
+
+// ── Toast ──
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show toast-'+type;
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+function showAlert(id, msg, type='error') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert alert-$${type} show`;
+  setTimeout(()=>el.classList.remove('show'), 4000);
+}
+
+// ── Tabs ──
+window.switchTab = (name, btn) => {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if (name==='students')   loadStudents();
+  if (name==='attempts')   loadAttempts();
+  if (name==='registered') loadRegisteredIDs();
+};
+
+// ══════════════════════════════
+// STUDENTS TAB
+// ══════════════════════════════
+let allStudents = [];
+
+window.loadStudents = async () => {
+  document.getElementById('studentsBody').innerHTML =
+    '<tr><td colspan="7" class="table-empty">Loading...</td></tr>';
+  try {
+    allStudents = await getAllStudents();
+    renderStudents(allStudents);
+    loadStats();
+  } catch(e) {
+    document.getElementById('studentsBody').innerHTML =
+      '<tr><td colspan="7" class="table-empty">❌ Failed to load students</td></tr>';
+  }
+};
+
+function renderStudents(rows) {
+  if (!rows.length) {
+    document.getElementById('studentsBody').innerHTML =
+      '<tr><td colspan="7" class="table-empty">👤 No students registered yet</td></tr>';
+    return;
+  }
+  document.getElementById('studentsBody').innerHTML = rows.map((s,i) => `
+  <tr>
+    <td style="color:rgba(255,255,255,0.35)">$${i+1}</td>
+    <td>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">
+          $${(s.name||'?')[0].toUpperCase()}
+        </div>
+        <div>
+          <div style="font-weight:600">$${s.name||'—'}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.35)">@$${s.username||'—'}</div>
+        </div>
+      </div>
+    </td>
+    <td style="color:rgba(255,255,255,0.5)">$${s.grade||'—'}</td>
+    <td><span class="badge role-$${s.role||'student'}">$${s.role||'student'}</span></td>
+    <td style="color:#fbbf24;font-weight:700">$${(s.xp||0).toLocaleString()}</td>
+    <td style="color:#60a5fa">$${s.totalQuizzes||0}</td>
+    <td>
+      <div class="action-btns">
+        <button class="btn-icon btn-icon-reset" title="Reset XP"
+          onclick="handleResetXP('$${s.uid}','$${s.name||s.username}')">♻️</button>
+        <button class="btn-icon btn-icon-del" title="Delete Student"
+          onclick="openDeleteModal('$${s.uid}','$${s.name||s.username}','student')">🗑️</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+window.filterStudents = (q) => {
+  q = q.toLowerCase();
+  renderStudents(q
+    ? allStudents.filter(s =>
+        (s.name||'').toLowerCase().includes(q) ||
+        (s.username||'').toLowerCase().includes(q) ||
+        (s.grade||'').toLowerCase().includes(q))
+    : allStudents);
+};
+
+// ══════════════════════════════
+// STATS
+// ══════════════════════════════
+async function loadStats() {
+  try {
+    const stats = await getAdminStats();
+    document.getElementById('statUsers').textContent   = stats.totalUsers   || 0;
+    document.getElementById('statQuizzes').textContent = stats.totalQuizzes || 0;
+    document.getElementById('statXP').textContent      = (stats.totalXP||0).toLocaleString();
+    document.getElementById('statAvg').textContent     = (stats.avgScore||0)+'%';
+  } catch(e) { console.warn('Stats error:', e); }
+}
+
+// ══════════════════════════════
+// ATTEMPTS TAB
+// ══════════════════════════════
+let allAttempts = [];
+
+window.loadAttempts = async () => {
+  document.getElementById('attemptsBody').innerHTML =
+    '<tr><td colspan="7" class="table-empty">Loading...</td></tr>';
+  try {
+    allAttempts = await getAllAttempts(100);
+    renderAttempts(allAttempts);
+  } catch(e) {
+    document.getElementById('attemptsBody').innerHTML =
+      '<tr><td colspan="7" class="table-empty">❌ Failed to load attempts</td></tr>';
+  }
+};
+
+function renderAttempts(rows) {
+  if (!rows.length) {
+    document.getElementById('attemptsBody').innerHTML =
+      '<tr><td colspan="7" class="table-empty">📭 No quiz attempts yet</td></tr>';
+    return;
+  }
+  document.getElementById('attemptsBody').innerHTML = rows.map(a => {
+    const pct  = Math.round(((a.score||0)/(a.total||1))*100);
+    const cls  = pct>=80?'score-high':pct>=50?'score-mid':'score-low';
+    const date = a.createdAt?.toDate ? a.createdAt.toDate().toLocaleDateString() : '—';
+    return `
+    <tr>
+      <td><strong>$${a.studentName||a.uid||'—'}</strong></td>
+      <td>$${a.subject||'—'}</td>
+      <td style="color:rgba(255,255,255,0.45);font-size:13px">$${a.chapter||'—'}</td>
+      <td><span class="score-pill $${cls}">$${a.score||0}/$${a.total||0} ($${pct}%)</span></td>
+      <td style="color:#fbbf24;font-weight:700">+$${a.xpEarned||0}</td>
+      <td style="color:rgba(255,255,255,0.4);font-size:13px">$${a.timeTaken||0}s</td>
+      <td style="color:rgba(255,255,255,0.3);font-size:12px">$${date}</td>
+    </tr>`;
+  }).join('');
+}
+
+window.filterAttempts = (q) => {
+  q = q.toLowerCase();
+  renderAttempts(q
+    ? allAttempts.filter(a =>
+        (a.studentName||'').toLowerCase().includes(q) ||
+        (a.subject||'').toLowerCase().includes(q) ||
+        (a.chapter||'').toLowerCase().includes(q))
+    : allAttempts);
+};
+
+// ══════════════════════════════
+// STUDENT IDs TAB
+// ══════════════════════════════
+let allIDs = [];
+
+window.loadRegisteredIDs = async () => {
+  document.getElementById('idsBody').innerHTML =
+    '<tr><td colspan="6" class="table-empty">Loading...</td></tr>';
+  try {
+    allIDs = await getAllStudentIDs();
+    renderIDs(allIDs);
+  } catch(e) {
+    document.getElementById('idsBody').innerHTML =
+      '<tr><td colspan="6" class="table-empty">❌ Failed to load IDs</td></tr>';
+  }
+};
+
+function renderIDs(rows) {
+  if (!rows.length) {
+    document.getElementById('idsBody').innerHTML =
+      '<tr><td colspan="6" class="table-empty">📭 No student IDs added yet</td></tr>';
+    return;
+  }
+  document.getElementById('idsBody').innerHTML = rows.map(r => `
+  <tr>
+    <td style="font-family:monospace;color:#a5b4fc;font-weight:600">$${r.studentId||'—'}</td>
+    <td style="color:rgba(255,255,255,0.5)">$${r.phone||'—'}</td>
+    <td>$${r.name||'—'}</td>
+    <td style="color:rgba(255,255,255,0.5)">$${r.cls||'—'}</td>
+    <td>
+      <span class="badge $${r.used?'role-student':'role-guest'}">
+        $${r.used?'✅ Registered':'⏳ Pending'}
+      </span>
+    </td>
+    <td>
+      <div class="action-btns">
+        <button class="btn-icon btn-icon-del" title="Remove ID"
+          onclick="openDeleteModal('$${r.studentId}','$${r.studentId}','id')">🗑️</button>
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+window.filterIDs = (q) => {
+  q = q.toLowerCase();
+  renderIDs(q
+    ? allIDs.filter(r =>
+        (r.studentId||'').toLowerCase().includes(q) ||
+        (r.phone||'').includes(q) ||
+        (r.name||'').toLowerCase().includes(q))
+    : allIDs);
+};
+
+// ══════════════════════════════
+// ADD STUDENT ID MODAL
+// ══════════════════════════════
+window.openAddModal = () => {
+  document.getElementById('addModal').classList.add('show');
+};
+window.closeAddModal = () => {
+  document.getElementById('addModal').classList.remove('show');
+  ['addStudentId','addPhone','addName','addClass'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+};
+
+window.addStudentID = async () => {
+  const studentId = document.getElementById('addStudentId').value.trim();
+  const phone     = document.getElementById('addPhone').value.trim();
+  const name      = document.getElementById('addName').value.trim();
+  const cls       = document.getElementById('addClass').value.trim();
+
+  if (!studentId || !phone)
+    return showAlert('addAlert','Student ID and phone are required.');
+
+  try {
+    await addStudentID({ studentId, phone, name, cls, used: false });
+    toast('✅ Student ID added successfully!');
+    closeAddModal();
+    loadRegisteredIDs();
+  } catch(e) {
+    showAlert('addAlert', '❌ Error: ' + e.message);
+  }
+};
+
+// ══════════════════════════════
+// DELETE MODAL
+// ══════════════════════════════
+let deleteTarget = null;
+
+window.openDeleteModal = (id, label, type) => {
+  deleteTarget = { id, type };
+  document.getElementById('deleteModalSub').textContent =
+    `Delete "$${label}"? This cannot be undone.`;
+  document.getElementById('deleteModal').classList.add('show');
+};
+
+window.closeDeleteModal = () => {
+  document.getElementById('deleteModal').classList.remove('show');
+  deleteTarget = null;
+};
+
+window.confirmDelete = async () => {
+  if (!deleteTarget) return;
+  try {
+    if (deleteTarget.type === 'student') {
+      await deleteStudent(deleteTarget.id);
+      toast('🗑️ Student deleted');
+      loadStudents();
+    } else {
+      await deleteStudentID(deleteTarget.id);
+      toast('🗑️ Student ID removed');
+      loadRegisteredIDs();
+    }
+    closeDeleteModal();
+  } catch(e) {
+    toast('❌ Error: ' + e.message, 'error');
+    closeDeleteModal();
+  }
+};
+
+// ── Reset XP ──
+window.handleResetXP = async (uid, name) => {
+  if (!confirm(`Reset XP for "$${name}"? Their XP will go back to 0.`)) return;
+  try {
+    await resetStudentXP(uid);
+    toast('♻️ XP reset for ' + name);
+    loadStudents();
+  } catch(e) {
+    toast('❌ Error: ' + e.message, 'error');
+  }
+};
+
+// ── Init ──
+loadStudents();
+</script>
+</body>
+</html>
