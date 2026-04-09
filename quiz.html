@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASAR — Quiz</title>
+<link rel="stylesheet" href="css/global.css">
+<style>
+.nav-user{display:flex;align-items:center;gap:10px}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.nav-xp{font-size:13px;color:rgba(255,255,255,0.6)}
+.nav-xp span{color:#fbbf24;font-weight:700}
+
+/* ── Setup Screen ── */
+.setup-wrap{min-height:calc(100vh - 65px);display:flex;align-items:center;justify-content:center;padding:30px 20px}
+.setup-card{width:100%;max-width:520px;padding:44px 40px;border-radius:24px}
+.setup-title{font-size:26px;font-weight:800;margin-bottom:6px}
+.setup-sub{color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:32px}
+.subject-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.subject-card{padding:14px 10px;border-radius:12px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);text-align:center;cursor:pointer;transition:all 0.3s;font-size:13px;font-weight:600;color:rgba(255,255,255,0.6)}
+.subject-card:hover{border-color:rgba(99,102,241,0.5);background:rgba(99,102,241,0.08);color:#fff}
+.subject-card.selected{border-color:#6366f1;background:rgba(99,102,241,0.2);color:#fff}
+.subject-icon{font-size:22px;margin-bottom:6px;display:block}
+.q-count-row{display:flex;gap:10px;margin-bottom:20px}
+.q-count-btn{flex:1;padding:10px;border-radius:10px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.5);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s;text-align:center}
+.q-count-btn.selected{border-color:#6366f1;background:rgba(99,102,241,0.2);color:#fff}
+
+/* ── Loading Screen ── */
+.loading-screen{min-height:calc(100vh - 65px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;text-align:center;padding:20px}
+.loading-screen.show{display:flex}
+.loading-ring{width:72px;height:72px;border:4px solid rgba(255,255,255,0.08);border-top-color:#6366f1;border-radius:50%;animation:spin 1s linear infinite}
+.loading-text{font-size:18px;font-weight:600;color:rgba(255,255,255,0.8)}
+.loading-sub{font-size:13px;color:rgba(255,255,255,0.35)}
+
+/* ── Quiz Screen ── */
+.quiz-screen{display:none;padding:30px 20px;max-width:720px;margin:0 auto}
+.quiz-screen.show{display:block}
+.quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.quiz-meta{font-size:13px;color:rgba(255,255,255,0.45)}
+.quiz-meta strong{color:#fff}
+.timer-ring{position:relative;width:56px;height:56px}
+.timer-ring svg{transform:rotate(-90deg)}
+.timer-ring circle{fill:none;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke 0.5s}
+.timer-bg{stroke:rgba(255,255,255,0.08)}
+.timer-fg{stroke:#6366f1;stroke-dasharray:138;stroke-dashoffset:0}
+.timer-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.progress-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:4px;margin-bottom:28px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#7c3aed);border-radius:4px;transition:width 0.4s ease}
+.question-card{padding:32px;border-radius:20px;margin-bottom:20px}
+.question-num{font-size:12px;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.question-text{font-size:19px;font-weight:700;line-height:1.55;margin-bottom:28px}
+.options-grid{display:flex;flex-direction:column;gap:12px}
+.option-btn{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:13px;border:2px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);color:#fff;font-size:15px;font-weight:500;cursor:pointer;text-align:left;transition:all 0.3s;width:100%}
+.option-btn:hover:not(:disabled){border-color:rgba(99,102,241,0.5);background:rgba(99,102,241,0.1)}
+.option-btn.correct{border-color:#10b981!important;background:rgba(16,185,129,0.15)!important;color:#6ee7b7}
+.option-btn.wrong{border-color:#ef4444!important;background:rgba(239,68,68,0.12)!important;color:#fca5a5}
+.option-btn.selected{border-color:#6366f1;background:rgba(99,102,241,0.15)}
+.option-label{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;transition:all 0.3s}
+.option-btn.correct .option-label{background:rgba(16,185,129,0.3)}
+.option-btn.wrong .option-label{background:rgba(239,68,68,0.25)}
+.explanation-box{padding:14px 18px;border-radius:12px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);color:rgba(255,255,255,0.75);font-size:14px;margin-top:16px;display:none}
+.explanation-box.show{display:block}
+.next-btn-wrap{text-align:right;margin-top:20px}
+
+/* ── Result Screen ── */
+.result-screen{display:none;min-height:calc(100vh - 65px);align-items:center;justify-content:center;padding:30px 20px}
+.result-screen.show{display:flex}
+.result-card{width:100%;max-width:540px;padding:44px 40px;border-radius:24px;text-align:center}
+.result-emoji{font-size:64px;margin-bottom:16px}
+.result-title{font-size:28px;font-weight:800;margin-bottom:8px}
+.result-sub{color:rgba(255,255,255,0.45);font-size:15px;margin-bottom:32px}
+.score-ring{width:150px;height:150px;margin:0 auto 32px;position:relative}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.score-bg{stroke:rgba(255,255,255,0.06)}
+.score-fg{stroke:url(#scoreGrad);stroke-dasharray:408;transition:stroke-dashoffset 1.5s ease}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-pct{font-size:34px;font-weight:900}
+.score-label{font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px}
+.stats-row{display:flex;gap:12px;margin-bottom:28px}
+.stat-box{flex:1;padding:16px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07)}
+.stat-val{font-size:22px;font-weight:800;margin-bottom:4px}
+.stat-key{font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.5px}
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+@media(max-width:600px){
+  .setup-card{padding:28px 20px}
+  .subject-grid{grid-template-columns:repeat(2,1fr)}
+  .question-card{padding:22px 16px}
+  .question-text{font-size:16px}
+  .result-card{padding:28px 20px}
+  .stats-row{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+<div class="grid-overlay"></div>
+<div id="toast"></div>
+
+<!-- ── Navbar ── -->
+<nav>
+  <a class="nav-logo" href="index.html">⚡ ASAR</a>
+  <div class="nav-links">
+    <a href="quiz.html" class="active">🎯 <span>Quiz</span></a>
+    <a href="leaderboard.html">🏆 <span>Leaderboard</span></a>
+    <a href="profile.html">👤 <span>Profile</span></a>
+  </div>
+  <div class="nav-user">
+    <div class="nav-xp">XP: <span id="navXP">0</span></div>
+    <div class="nav-avatar" id="navAvatar">?</div>
+  </div>
+</nav>
+
+<!-- ── Setup Screen ── -->
+<div class="setup-wrap" id="setupScreen">
+  <div class="setup-card glass page">
+    <div class="setup-title grad-text">Start a Quiz 🎯</div>
+    <div class="setup-sub">Choose your class, subject and chapter</div>
+
+    <div id="setupAlert" class="alert"></div>
+
+    <div class="form-group">
+      <label>Class</label>
+      <select id="selClass" class="form-control" onchange="updateSubjects()">
+        <option value="">— Select Class —</option>
+        <option>Class 6</option><option>Class 7</option><option>Class 8</option>
+        <option>Class 9</option><option>Class 10</option>
+        <option>Class 11</option><option>Class 12</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Subject</label>
+      <div class="subject-grid" id="subjectGrid">
+        <div style="grid-column:1/-1;color:rgba(255,255,255,0.3);font-size:13px;text-align:center;padding:10px">
+          Select a class first
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Chapter / Topic</label>
+      <input id="selChapter" type="text" class="form-control" placeholder="e.g. Photosynthesis, Algebra, World War 2...">
+    </div>
+
+    <div class="form-group">
+      <label>Number of Questions</label>
+      <div class="q-count-row">
+        <div class="q-count-btn selected" onclick="selectCount(5,this)">5 Qs</div>
+        <div class="q-count-btn" onclick="selectCount(10,this)">10 Qs</div>
+        <div class="q-count-btn" onclick="selectCount(15,this)">15 Qs</div>
+        <div class="q-count-btn" onclick="selectCount(20,this)">20 Qs</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="startQuiz()">
+      🚀 Generate Quiz with AI
+    </button>
+  </div>
+</div>
+
+<!-- ── Loading Screen ── -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-ring"></div>
+  <div class="loading-text">Generating your quiz...</div>
+  <div class="loading-sub" id="loadingSub">Gemini AI is creating questions for you ✨</div>
+</div>
+
+<!-- ── Quiz Screen ── -->
+<div class="quiz-screen" id="quizScreen">
+  <div class="quiz-header">
+    <div class="quiz-meta">
+      <strong id="qSubject">—</strong> · <span id="qChapter">—</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div class="quiz-meta">Q <strong id="qCurrent">1</strong> / <span id="qTotal">10</span></div>
+      <div class="timer-ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle class="timer-bg" cx="28" cy="28" r="22"/>
+          <circle class="timer-fg" id="timerCircle" cx="28" cy="28" r="22"/>
+        </svg>
+        <div class="timer-text" id="timerText">30</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="question-card glass">
+    <div class="question-num" id="questionNum">Question 1</div>
+    <div class="question-text" id="questionText">Loading...</div>
+    <div class="options-grid" id="optionsGrid"></div>
+    <div class="explanation-box" id="explanationBox"></div>
+  </div>
+
+  <div class="next-btn-wrap">
+    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" style="display:none">
+      Next Question →
+    </button>
+  </div>
+</div>
+
+<!-- ── Result Screen ── -->
+<div class="result-screen" id="resultScreen">
+  <div class="result-card glass page">
+    <svg width="0" height="0">
+      <defs>
+        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#2563eb"/>
+          <stop offset="100%" style="stop-color:#7c3aed"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <div class="result-emoji" id="resultEmoji">🏆</div>
+    <div class="result-title grad-text" id="resultTitle">Quiz Complete!</div>
+    <div class="result-sub" id="resultSub">Great job! Here's how you did.</div>
+
+    <div class="score-ring">
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <circle class="score-bg" cx="75" cy="75" r="65"/>
+        <circle class="score-fg" id="scoreCircle" cx="75" cy="75" r="65" style="stroke-dashoffset:408"/>
+      </svg>
+      <div class="score-inner">
+        <div class="score-pct" id="scorePct">0%</div>
+        <div class="score-label">Score</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-val" id="statCorrect" style="color:#10b981">0</div>
+        <div class="stat-key">Correct</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="statWrong" style="color:#ef4444">0</div>
+        <div class="stat-key">Wrong</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="statXP" style="color:#fbbf24">+0</div>
+        <div class="stat-key">XP Earned</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="statTime" style="color:#60a5fa">0s</div>
+        <div class="stat-key">Time Taken</div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn btn-outline" onclick="retryQuiz()">🔄 Try Again</button>
+      <button class="btn btn-outline" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
+      <button class="btn btn-primary" onclick="newQuiz()">🎯 New Quiz</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { requireLogin, getSession, logout } from './js/auth.js';
+import { generateQuestions, calculateXP, saveAttempt } from './js/quiz.js';
+
+const user = requireLogin();
+if (!user) throw new Error('Not logged in');
+
+// ── Navbar ──
+document.getElementById('navXP').textContent    = user.xp || 0;
+document.getElementById('navAvatar').textContent = (user.name||'G')[0].toUpperCase();
+
+// ── Subjects by Class ──
+const SUBJECTS = {
+  'Class 6':  ['Mathematics','Science','English','Social Studies','Hindi'],
+  'Class 7':  ['Mathematics','Science','English','Social Studies','Hindi'],
+  'Class 8':  ['Mathematics','Science','English','Social Studies','Hindi'],
+  'Class 9':  ['Mathematics','Science','English','Social Studies','Hindi','Urdu'],
+  'Class 10': ['Mathematics','Science','English','Social Studies','Hindi','Urdu'],
+  'Class 11': ['Mathematics','Physics','Chemistry','Biology','English','History','Geography','Economics','Computer Science'],
+  'Class 12': ['Mathematics','Physics','Chemistry','Biology','English','History','Geography','Economics','Computer Science'],
+};
+
+const SUBJECT_ICONS = {
+  Mathematics:'📐', Science:'🔬', English:'📚', 'Social Studies':'🌍',
+  Hindi:'🇮🇳', Urdu:'✍️', Physics:'⚛️', Chemistry:'🧪',
+  Biology:'🌿', History:'📜', Geography:'🗺️', Economics:'📊',
+  'Computer Science':'💻'
+};
+
+// State
+let questions=[], currentQ=0, score=0, selectedSubject='',
+    questionCount=5, answers=[], timer=null, timeLeft=30,
+    totalTime=0, quizStartTime=0;
+
+// ── Update Subjects ──
+window.updateSubjects = () => {
+  const cls = document.getElementById('selClass').value;
+  const grid = document.getElementById('subjectGrid');
+  selectedSubject = '';
+  if (!cls) {
+    grid.innerHTML = '<div style="grid-column:1/-1;color:rgba(255,255,255,0.3);font-size:13px;text-align:center;padding:10px">Select a class first</div>';
+    return;
+  }
+  const subs = SUBJECTS[cls] || [];
+  grid.innerHTML = subs.map(s => `
+    <div class="subject-card" onclick="selectSubject('$${s}',this)">
+      <span class="subject-icon">$${SUBJECT_ICONS[s]||'📖'}</span>$${s}
+    </div>`).join('');
+};
+
+window.selectSubject = (s, el) => {
+  document.querySelectorAll('.subject-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSubject = s;
+};
+
+window.selectCount = (n, el) => {
+  document.querySelectorAll('.q-count-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  questionCount = n;
+};
+
+// ── Toast ──
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── Show Alert ──
+function showAlert(msg){
+  const el=document.getElementById('setupAlert');
+  el.textContent=msg;
+  el.className='alert alert-error show';
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+// ── Start Quiz ──
+window.startQuiz = async () => {
+  const cls     = document.getElementById('selClass').value;
+  const chapter = document.getElementById('selChapter').value.trim();
+  if (!cls)           return showAlert('Please select a class.');
+  if (!selectedSubject) return showAlert('Please select a subject.');
+  if (!chapter)       return showAlert('Please enter a chapter or topic.');
+
+  // Show loading
+  document.getElementById('setupScreen').style.display    = 'none';
+  document.getElementById('loadingScreen').classList.add('show');
+
+  const tips = [
+    '🧠 Analyzing curriculum...',
+    '✨ Crafting smart questions...',
+    '🎯 Balancing difficulty levels...',
+    '📚 Almost ready...'
+  ];
+  let ti = 0;
+  const tipInterval = setInterval(()=>{
+    document.getElementById('loadingSub').textContent = tips[ti++ % tips.length];
+  }, 1800);
+
+  try {
+    questions = await generateQuestions(cls, selectedSubject, chapter, questionCount);
+    clearInterval(tipInterval);
+    document.getElementById('loadingScreen').classList.remove('show');
+
+    // Setup quiz screen
+    currentQ=0; score=0; answers=[];
+    quizStartTime = Date.now();
+    document.getElementById('qSubject').textContent = selectedSubject;
+    document.getElementById('qChapter').textContent = chapter;
+    document.getElementById('qTotal').textContent   = questions.length;
+    document.getElementById('quizScreen').classList.add('show');
+    renderQuestion();
+
+  } catch(e) {
+    clearInterval(tipInterval);
+    document.getElementById('loadingScreen').classList.remove('show');
+    document.getElementById('setupScreen').style.display = 'flex';
+    showAlert('❌ Failed to generate questions. Check your API key or try again.');
+    console.error(e);
+  }
+};
+
+// ── Render Question ──
+function renderQuestion() {
+  const q   = questions[currentQ];
+  const num = currentQ + 1;
+
+  document.getElementById('questionNum').textContent  = `Question $${num}`;
+  document.getElementById('questionText').textContent = q.question;
+  document.getElementById('qCurrent').textContent     = num;
+  document.getElementById('progressFill').style.width = ((num-1)/questions.length*100)+'%';
+  document.getElementById('nextBtn').style.display    = 'none';
+  document.getElementById('explanationBox').classList.remove('show');
+
+  const labels = ['A','B','C','D'];
+  document.getElementById('optionsGrid').innerHTML = q.options.map((opt,i)=>`
+    <button class="option-btn" onclick="selectAnswer($${i},this)">
+      <span class="option-label">$${labels[i]}</span>
+      <span>$${opt}</span>
+    </button>`).join('');
+
+  startTimer();
+}
+
+// ── Timer ──
+function startTimer() {
+  clearInterval(timer);
+  timeLeft = 30;
+  const circle = document.getElementById('timerCircle');
+  const circumference = 138;
+
+  timer = setInterval(()=>{
+    timeLeft--;
+    document.getElementById('timerText').textContent = timeLeft;
+    const offset = circumference - (timeLeft/30)*circumference;
+    circle.style.strokeDashoffset = offset;
+    circle.style.stroke = timeLeft > 15 ? '#6366f1' : timeLeft > 7 ? '#f59e0b' : '#ef4444';
+
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      timeOut();
+    }
+  },1000);
+}
+
+// ── Time Out ──
+function timeOut() {
+  const q = questions[currentQ];
+  answers.push({ selected: -1, correct: q.correctIndex, timeTaken: 30 });
+  // Highlight correct answer
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.correctIndex].classList.add('correct');
+  document.getElementById('nextBtn').style.display = 'inline-flex';
+  toast('⏰ Time\'s up!');
+}
+
+// ── Select Answer ──
+window.selectAnswer = (idx, btn) => {
+  clearInterval(timer);
+  const q       = questions[currentQ];
+  const timeTaken = 30 - timeLeft;
+  const isCorrect = idx === q.correctIndex;
+
+  answers.push({ selected: idx, correct: q.correctIndex, timeTaken });
+  if (isCorrect) score++;
+
+  // Disable all options
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[q.correctIndex].classList.add('correct');
+  if (!isCorrect) btn.classList.add('wrong');
+
+  // Show explanation if available
+  if (q.explanation) {
+    const box = document.getElementById('explanationBox');
+    box.textContent = '💡 ' + q.explanation;
+    box.classList.add('show');
+  }
+
+  document.getElementById('nextBtn').style.display = 'inline-flex';
+};
+
+// ── Next Question ──
+window.nextQuestion = () => {
+  currentQ++;
+  if (currentQ < questions.length) {
+    renderQuestion();
+  } else {
+    clearInterval(timer);
+    showResult();
+  }
+};
+
+// ── Show Result ──
+async function showResult() {
+  document.getElementById('quizScreen').classList.remove('show');
+  const resultScreen = document.getElementById('resultScreen');
+  resultScreen.classList.add('show');
+
+  const total     = questions.length;
+  const pct       = Math.round((score/total)*100);
+  const timeTaken = Math.round((Date.now()-quizStartTime)/1000);
+  const xp        = calculateXP(score, total, timeTaken);
+
+  // Emoji + message
+  let emoji='😊', title='Good Try!';
+  if (pct===100){emoji='🏆';title='Perfect Score!';}
+  else if (pct>=80){emoji='🌟';title='Excellent!';}
+  else if (pct>=60){emoji='👍';title='Well Done!';}
+  else if (pct>=40){emoji='😊';title='Keep Practicing!';}
+  else {emoji='💪';title='Don\'t Give Up!';}
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultSub').textContent   = `You scored $${score} out of ${total} questions`;
+
+  // Score ring animation
+  const circumference = 408;
+  setTimeout(()=>{
+    document.getElementById('scoreCircle').style.strokeDashoffset =
+      circumference - (pct/100)*circumference;
+  }, 300);
+
+  // Stats
+  document.getElementById('scorePct').textContent    = pct+'%';
+  document.getElementById('statCorrect').textContent = score;
+  document.getElementById('statWrong').textContent   = total-score;
+  document.getElementById('statXP').textContent      = '+'+xp;
+  document.getElementById('statTime').textContent    = timeTaken+'s';
+
+  // Save to Firebase (skip for guests)
+  if (user.role !== 'guest') {
+    try {
+      await saveAttempt(user.uid, {
+        cls: document.getElementById('selClass').value,
+        subject: selectedSubject,
+        chapter: document.getElementById('selChapter').value.trim(),
+        score, total, xpEarned: xp, timeTaken, answers
+      });
+      toast('✅ Result saved! +'+xp+' XP earned');
+    } catch(e) { toast('⚠️ Could not save result.'); }
+  }
+}
+
+// ── Retry / New Quiz ──
+window.retryQuiz = () => {
+  document.getElementById('resultScreen').classList.remove('show');
+  currentQ=0; score=0; answers=[];
+  quizStartTime = Date.now();
+  document.getElementById('quizScreen').classList.add('show');
+  renderQuestion();
+};
+
+window.newQuiz = () => {
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('setupScreen').style.display = 'flex';
+  selectedSubject='';
+  document.getElementById('selClass').value    = '';
+  document.getElementById('selChapter').value  = '';
+  document.getElementById('subjectGrid').innerHTML =
+    '<div style="grid-column:1/-1;color:rgba(255,255,255,0.3);font-size:13px;text-align:center;padding:10px">Select a class first</div>';
+};
+</script>
+</body>
+</html>
