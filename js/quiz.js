@@ -5,7 +5,7 @@ import {
   increment, serverTimestamp, getDoc
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"; // 🔑 Replace this
+const GEMINI_API_KEY = "AIzaSyDonA0YOrAC_WPLnAWFChlCxcrEIK1z70c"; // 🔑 Replace this
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$${GEMINI_API_KEY}`;
 
 // ── Generate MCQs via Gemini ──
